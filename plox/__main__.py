@@ -16,8 +16,13 @@ class PLox:
         self.error_occured = False
 
     def run(self, source):
-        print(ASTPrinter().print(Parser(self, Scanner(self, source).scan_tokens()).parse()))
-        self.error_occured = False
+        token_list  = Scanner(self, source).scan_tokens()
+        parsed_expr = Parser(self, token_list).parse()
+
+        print(token_list)
+
+        if parsed_expr:
+            print(ASTPrinter().print(parsed_expr))
 
     def run_prompt(self):
         while True:
@@ -38,7 +43,7 @@ class PLox:
         self.report(token.line, where, message)
 
     def report(self, line, where, message):
-        print(f'l{line} error: {where} {message}', file=sys.stderror)
+        print(f'l{line} error: {where} {message}', file=sys.stderr)
         self.error_occured = True
 
 if __name__ == '__main__':
