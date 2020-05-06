@@ -119,7 +119,7 @@ class Scanner:
             self.plox.scan_error(self.__line, 'unterminated string'); return
 
         self.advance()
-        self.add_token(TokenType.STRING, self.source[self.__start:self.__current])
+        self.add_token(TokenType.STRING, self.source[self.__start + 1:self.__current - 1])
 
     def _number(self):
         while self.peek().isdigit():
