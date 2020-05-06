@@ -46,6 +46,7 @@ class Interpreter:
         right = self.evaluate(expr.expression)
 
         if expr.operator.type == TokenType.MINUS:
+            check_number_operands(expr.operator, right)
             return -1 * right
 
         elif expr.operator.type == TokenType.BANG:

@@ -48,7 +48,7 @@ class PLox:
         self.report(token.line, where, message)
 
     def runtime_error(self, error):
-        self.report(error.token.line, '', error.message)
+        self.report(error.token.line, '', str(error))
         self.runtime_error_occured = True
 
     def report(self, line, where, message):
