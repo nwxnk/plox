@@ -66,7 +66,7 @@ class Scanner:
         elif char.isalpha():
             self._identifier(); return
 
-        self.plox.error(self.__line, 'Unexpected Character')
+        self.plox.scan_error(self.__line, 'unexpected character')
 
     def scan_tokens(self):
         while not self.is_at_end():
@@ -116,7 +116,7 @@ class Scanner:
             self.advance()
 
         if self.is_at_end():
-            self.plox.error(self.__line, 'Unterminated string'); return
+            self.plox.scan_error(self.__line, 'unterminated string'); return
 
         self.advance()
         self.add_token(TokenType.STRING, self.source[self.__start:self.__current])

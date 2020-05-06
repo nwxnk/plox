@@ -19,8 +19,6 @@ class PLox:
         token_list  = Scanner(self, source).scan_tokens()
         parsed_expr = Parser(self, token_list).parse()
 
-        print(token_list)
-
         if parsed_expr:
             print(ASTPrinter().print(parsed_expr))
 
@@ -36,7 +34,7 @@ class PLox:
             sys.exit(65)
 
     def scan_error(self, line, message):
-        self.report(line, '', message, sys.stderr)
+        self.report(line, '', message)
 
     def parse_error(self, token, message):
         where = 'at end' if token.type == TokenType.EOF else f"at '{token.lexeme}'"

@@ -106,10 +106,10 @@ class Parser:
 
         if self.match(TokenType.LEFT_PAREN):
             expr = self.expression()
-            self.consume(TokenType.RIGHT_PAREN, 'Expected ")" after expression.')
+            self.consume(TokenType.RIGHT_PAREN, 'expected ")" after expression')
             return Grouping(expr)
 
-        raise self.error(self.peek(), 'Except expression.')
+        raise self.error(self.peek(), 'except expression')
 
     def synchronize(self):
         self.advance()
