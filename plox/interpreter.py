@@ -23,9 +23,23 @@ def check_number_operands(operator, *operands):
 
     raise RuntimeError(operator, 'operands must be numbers')
 
+class Environment:
+    def __init__(self):
+        self.__values = {}
+
+    def define(self, name, value):
+        self.__values[name] = value
+
+    def get(self, name):
+        try:
+            return self.__values[name.lexeme]
+        except KeyError:
+            raise RuntimeError(name, f'undefined variable "{name.lexeme}"')
+
 class Interpreter:
     def __init__(self, plox):
         self.plox = plox
+        self.envoironment = Environment()
 
     def interpret(self, statements):
         try:
@@ -57,6 +71,9 @@ class Interpreter:
             return not is_truthy(right)
 
         return None
+
+    def visit_variable(self, expr):
+        return self.envoironment.get(expr.name)
 
     def visit_binary(self, expr):
         left = self.evaluate(expr.left)
@@ -106,3 +123,11 @@ class Interpreter:
 
     def visit_print_statement(self, stmt):
         print(stringify(self.evaluate(stmt.expression)))
+
+    def visit_var_statement(self, stmt):
+        value = None
+
+        if stmt.initializer:
+            value = self.evaluate(stmt.initializer)
+
+        self.envoironment.define(stmt.name.lexeme, value)

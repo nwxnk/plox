@@ -10,7 +10,7 @@ class Variable(Expression):
         self.name = name
 
     def accept(self, visitor):
-        return visitor.visit_var(self)
+        return visitor.visit_variable(self)
 
 class Literal(Expression):
     def __init__(self, value):

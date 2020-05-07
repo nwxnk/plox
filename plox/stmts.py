@@ -25,4 +25,4 @@ class VarStatement(Statement):
 		self.initializer = expr
 
 	def accept(self, visitor):
-		pass
+		visitor.visit_var_statement(self)
