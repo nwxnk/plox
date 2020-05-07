@@ -5,10 +5,5 @@ var a = 1;
 var b = 5;
 var c = 6;
 
-print "    sum of roots: ";
-print -b / a;
-print "\n";
-
-print "product of roots: ";
-print c / a;
-print "\n";
+print "    sum of roots: " + (-b / a);
+print "product of roots: " + ( c / a);
