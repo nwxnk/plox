@@ -15,7 +15,10 @@ def stringify(object):
     if object is None:
         return 'nil'
 
-    return {'True': 'true', 'False': 'false'}.get(str(object), str(object))
+    if type(object) is bool:
+        return str(object).lower()
+
+    return str(object)
 
 def check_number_operands(operator, *operands):
     if all(map(lambda o: isinstance(o, Number), operands)):
@@ -45,7 +48,7 @@ class Environment:
 class Interpreter:
     def __init__(self, plox):
         self.plox = plox
-        self.envoironment = Environment()
+        self.environment = Environment()
 
     def interpret(self, statements):
         try:
@@ -80,11 +83,11 @@ class Interpreter:
         return None
 
     def visit_variable(self, expr):
-        return self.envoironment.get(expr.name)
+        return self.environment.get(expr.name)
 
     def visit_assignment(self, expr):
         value = self.evaluate(expr.value)
-        self.envoironment.assign(expr.name, value)
+        self.environment.assign(expr.name, value)
 
         return value
 
@@ -146,4 +149,4 @@ class Interpreter:
         if stmt.initializer:
             value = self.evaluate(stmt.initializer)
 
-        self.envoironment.define(stmt.name, value)
+        self.environment.define(stmt.name, value)
