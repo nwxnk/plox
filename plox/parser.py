@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from plox.exprs import *
+from plox.stmts import *
 from plox.token import Token, TokenType
 
 class ParseError(Exception):
@@ -14,10 +15,12 @@ class Parser:
         self.tokens = tokens
 
     def parse(self):
-        try:
-            return self.expression()
-        except ParseError:
-            return None
+        statements = []
+
+        while not self.is_at_end():
+            statements.append(self.statement())
+
+        return statements
 
     def is_at_end(self):
         return self.peek().type == TokenType.EOF
@@ -54,6 +57,22 @@ class Parser:
     def error(self, token, message):
         self.plox.parse_error(token, message)
         return ParseError()
+
+    def statement(self):
+        if self.match(TokenType.PRINT):
+            return self.print_statement()
+
+        return self.expression_statement()
+
+    def print_statement(self):
+        value = self.expression()
+        self.consume(TokenType.SEMICOLON, 'expect ";" after value')
+        return PrintStatement(value)
+
+    def expression_statement(self):
+        value = self.expression()
+        self.consume(TokenType.SEMICOLON, 'expect ";" after value')
+        return ExpressionStatement(value)
 
     def expression(self):
         return self.equality()

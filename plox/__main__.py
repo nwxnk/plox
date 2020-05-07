@@ -16,11 +16,9 @@ class PLox:
         self.runtime_error_occured = False
 
     def run(self, source):
-        token_list  = Scanner(self, source).scan_tokens()
-        parsed_expr = Parser(self, token_list).parse()
-
-        if parsed_expr:
-            self.interpreter.interpret(parsed_expr)
+        token_list = Scanner(self, source).scan_tokens()
+        statements = Parser(self, token_list).parse()
+        self.interpreter.interpret(statements)
 
     def run_prompt(self):
         while True:

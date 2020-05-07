@@ -27,14 +27,18 @@ class Interpreter:
     def __init__(self, plox):
         self.plox = plox
 
-    def interpret(self, expression):
+    def interpret(self, statements):
         try:
-            print(stringify(self.evaluate(expression)))
+            for statement in statements:
+                self.execute(statement)
         except RuntimeError as error:
             self.plox.runtime_error(error)
 
     def evaluate(self, expr):
         return expr.accept(self)
+
+    def execute(self, stmt):
+        stmt.accept(self)
         
     def visit_literal(self, expr):
         return expr.value
@@ -96,3 +100,9 @@ class Interpreter:
                 raise RuntimeError(expr.operator, 'operands must be two numbers or strings')
 
         return None
+
+    def visit_expression_statement(self, stmt):
+        self.evaluate(stmt.expression)
+
+    def visit_print_statement(self, stmt):
+        print(stringify(self.evaluate(stmt.expression)))
