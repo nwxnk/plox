@@ -4,12 +4,14 @@ declaration     → varDecl
                 | statement ;
 
 statement       → exprStmt
-                | printStmt ;
-
-exprStmt        → expression ";" ;
-printStmt       → "print" expression ";" ;
+                | printStmt
+                | block ;
 
 varDecl         → "var" IDENTIFIER ( "=" expression )? ";" ;
+
+block           → "{" declaration* "}" ;
+exprStmt        → expression ";" ;
+printStmt       → "print" expression ";" ;
 
 expression      → assignment ;
 assignment      → IDENTIFIER "=" assignment
