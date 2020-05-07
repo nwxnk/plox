@@ -50,7 +50,8 @@ class Interpreter:
     def interpret(self, statements):
         try:
             for statement in statements:
-                self.execute(statement)
+                if statement:
+                    self.execute(statement)
         except RuntimeError as error:
             self.plox.runtime_error(error)
 
@@ -61,7 +62,7 @@ class Interpreter:
         stmt.accept(self)
         
     def visit_literal(self, expr):
-        return expr.value if type(expr.value) != str else expr.value.replace('\\n', '\n')
+        return expr.value
 
     def visit_grouping(self, expr):
         return self.evaluate(expr.expression)
@@ -124,9 +125,12 @@ class Interpreter:
 
         elif t_type is TokenType.PLUS:
             try:
+                if isinstance(left, str) or isinstance(right, str):
+                    return f'{left}{right}'
+
                 return left + right
             except TypeError:
-                raise RuntimeError(expr.operator, 'operands must be two numbers or strings')
+                raise RuntimeError(expr.operator, 'operands must be numbers or strings')
 
         return None
 
@@ -134,7 +138,7 @@ class Interpreter:
         self.evaluate(stmt.expression)
 
     def visit_print_statement(self, stmt):
-        print(stringify(self.evaluate(stmt.expression)), end='')
+        print(stringify(self.evaluate(stmt.expression)))
 
     def visit_var_statement(self, stmt):
         value = None

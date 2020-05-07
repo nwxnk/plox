@@ -23,7 +23,8 @@ class Parser:
         return statements
 
     def is_at_end(self):
-        return self.peek().type == TokenType.EOF
+        return self.__current >= len(self.tokens) or \
+            self.peek().type == TokenType.EOF
 
     def peek(self):
         return self.tokens[self.__current]
@@ -64,7 +65,7 @@ class Parser:
                 return self.var_declaration()
 
             return self.statement()
-        except ParseError as error:
+        except ParseError:
             self.synchronize()
 
     def var_declaration(self):
@@ -176,7 +177,7 @@ class Parser:
             TokenType.CLASS,
             TokenType.RETURN
         ]
-        
+
         while not self.is_at_end():
             if self.previous().type == TokenType.SEMICOLON:
                 return
