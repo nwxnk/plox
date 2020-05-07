@@ -1,29 +1,29 @@
-program     	→ declaration* EOF ;
+program         → declaration* EOF ;
 
-declaration 	→ varDecl
-            	| statement ;
+declaration     → varDecl
+                | statement ;
 
-statement   	→ exprStmt
-            	| printStmt ;
+statement       → exprStmt
+                | printStmt ;
 
-exprStmt  		→ expression ";" ;
-printStmt 		→ "print" expression ";" ;
+exprStmt        → expression ";" ;
+printStmt       → "print" expression ";" ;
 
-varDecl 		→ "var" IDENTIFIER ( "=" expression )? ";" ;
+varDecl         → "var" IDENTIFIER ( "=" expression )? ";" ;
 
-expression 		→ assignment ;
-assignment 		→ IDENTIFIER "=" assignment
-           		| equality ;
-           		
-equality		→ comparison ( ( "!=" | "==" ) comparison )* ;
-comparison		→ addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ;
-addition		→ multiplication ( ( "-" | "+" ) multiplication )* ;
-multiplication	→ unary ( ( "/" | "*" ) unary )* ;
+expression      → assignment ;
+assignment      → IDENTIFIER "=" assignment
+                | equality ;
+                
+equality        → comparison ( ( "!=" | "==" ) comparison )* ;
+comparison      → addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ;
+addition        → multiplication ( ( "-" | "+" ) multiplication )* ;
+multiplication  → unary ( ( "/" | "*" ) unary )* ;
 
-unary          	→ ( "!" | "-" ) unary
-               	| primary ;
+unary           → ( "!" | "-" ) unary
+                | primary ;
 
-primary 		→ "true" | "false" | "nil"
-        		| NUMBER | STRING
-        		| "(" expression ")"
-        		| IDENTIFIER ;
+primary         → "true" | "false" | "nil"
+                | NUMBER | STRING
+                | "(" expression ")"
+                | IDENTIFIER ;
