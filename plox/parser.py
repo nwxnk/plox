@@ -76,8 +76,8 @@ class Parser:
         return VarStatement(name, init)
 
     def statement(self):
-        if self.match(TokenType.PRINT):
-            return self.print_statement()
+        if self.match(TokenType.PRINT): return self.print_statement()
+        if self.match(TokenType.LEFT_BRACE): return BlockStatement(self.block_statement())
 
         return self.expression_statement()
 
@@ -90,6 +90,15 @@ class Parser:
         value = self.expression()
         self.consume(TokenType.SEMICOLON, 'expect ";" after value')
         return ExpressionStatement(value)
+
+    def block_statement(self):
+        statements = []
+
+        while (not self.is_at_end()) and (not self.check(TokenType.RIGHT_BRACE)):
+            statements.append(self.declaration())
+
+        self.consume(TokenType.RIGHT_BRACE, 'except "}" after block')
+        return statements
 
     def expression(self):
         return self.assignment()

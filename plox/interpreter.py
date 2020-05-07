@@ -27,8 +27,9 @@ def check_number_operands(operator, *operands):
     raise RuntimeError(operator, 'operands must be numbers')
 
 class Environment:
-    def __init__(self):
+    def __init__(self, enclosing=None):
         self.__values = {}
+        self.enclosing = enclosing
 
     def define(self, name, value):
         self.__values[name.lexeme] = value
@@ -37,11 +38,18 @@ class Environment:
         try:
             return self.__values[name.lexeme]
         except KeyError:
+
+            if self.enclosing:
+                return self.enclosing.get(name)
+
             raise RuntimeError(name, f'undefined variable "{name.lexeme}"')
 
     def assign(self, name, value):
         if name.lexeme in self.__values:
             self.__values[name.lexeme] = value; return
+
+        if self.enclosing:
+            self.enclosing.assign(name, value); return
 
         raise RuntimeError(name, f'undefined variable "{name.lexeme}"')
 
@@ -53,8 +61,7 @@ class Interpreter:
     def interpret(self, statements):
         try:
             for statement in statements:
-                if statement:
-                    self.execute(statement)
+                self.execute(statement)
         except RuntimeError as error:
             self.plox.runtime_error(error)
 
@@ -62,7 +69,20 @@ class Interpreter:
         return expr.accept(self)
 
     def execute(self, stmt):
-        stmt.accept(self)
+        if stmt:
+            stmt.accept(self)
+
+    def execute_block(self, statements, environment):
+        previous = self.environment
+
+        try:
+            self.environment = environment
+
+            for statement in statements:
+                self.execute(statement)
+
+        finally:
+            self.environment = previous
         
     def visit_literal(self, expr):
         return expr.value
@@ -150,3 +170,6 @@ class Interpreter:
             value = self.evaluate(stmt.initializer)
 
         self.environment.define(stmt.name, value)
+
+    def visit_block_statement(self, stmt):
+        self.execute_block(stmt.statements, Environment(self.environment))

@@ -1,6 +1,6 @@
 # coding: utf-8
 
-__all__ = ('Statement', 'VarStatement', 'PrintStatement', 'ExpressionStatement')
+__all__ = ('Statement', 'VarStatement', 'BlockStatement', 'PrintStatement', 'ExpressionStatement')
 
 class Statement:
     pass
@@ -26,3 +26,10 @@ class VarStatement(Statement):
 
     def accept(self, visitor):
         visitor.visit_var_statement(self)
+
+class BlockStatement(Statement):
+    def __init__(self, statements):
+        self.statements = statements
+
+    def accept(self, visitor):
+        visitor.visit_block_statement(self)
