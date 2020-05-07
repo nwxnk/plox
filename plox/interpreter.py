@@ -28,13 +28,19 @@ class Environment:
         self.__values = {}
 
     def define(self, name, value):
-        self.__values[name] = value
+        self.__values[name.lexeme] = value
 
     def get(self, name):
         try:
             return self.__values[name.lexeme]
         except KeyError:
             raise RuntimeError(name, f'undefined variable "{name.lexeme}"')
+
+    def assign(self, name, value):
+        if name.lexeme in self.__values:
+            self.__values[name.lexeme] = value; return
+
+        raise RuntimeError(name, f'undefined variable "{name.lexeme}"')
 
 class Interpreter:
     def __init__(self, plox):
@@ -55,7 +61,7 @@ class Interpreter:
         stmt.accept(self)
         
     def visit_literal(self, expr):
-        return expr.value
+        return expr.value if type(expr.value) != str else expr.value.replace('\\n', '\n')
 
     def visit_grouping(self, expr):
         return self.evaluate(expr.expression)
@@ -74,6 +80,12 @@ class Interpreter:
 
     def visit_variable(self, expr):
         return self.envoironment.get(expr.name)
+
+    def visit_assignment(self, expr):
+        value = self.evaluate(expr.value)
+        self.envoironment.assign(expr.name, value)
+
+        return value
 
     def visit_binary(self, expr):
         left = self.evaluate(expr.left)
@@ -122,7 +134,7 @@ class Interpreter:
         self.evaluate(stmt.expression)
 
     def visit_print_statement(self, stmt):
-        print(stringify(self.evaluate(stmt.expression)))
+        print(stringify(self.evaluate(stmt.expression)), end='')
 
     def visit_var_statement(self, stmt):
         value = None
@@ -130,4 +142,4 @@ class Interpreter:
         if stmt.initializer:
             value = self.evaluate(stmt.initializer)
 
-        self.envoironment.define(stmt.name.lexeme, value)
+        self.envoironment.define(stmt.name, value)
