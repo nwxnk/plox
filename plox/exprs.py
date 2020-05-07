@@ -1,9 +1,16 @@
 # coding: utf-8
 
-__all__ = ('Expression', 'Literal', 'Grouping', 'Unary', 'Binary')
+__all__ = ('Expression', 'Variable', 'Literal', 'Grouping', 'Unary', 'Binary')
 
 class Expression:
     pass
+
+class Variable(Expression):
+    def __init__(self, name):
+        self.name = name
+
+    def accept(self, visitor):
+        return visitor.visit_var(self)
 
 class Literal(Expression):
     def __init__(self, value):

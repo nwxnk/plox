@@ -18,7 +18,7 @@ class Parser:
         statements = []
 
         while not self.is_at_end():
-            statements.append(self.statement())
+            statements.append(self.declaration())
 
         return statements
 
@@ -57,6 +57,22 @@ class Parser:
     def error(self, token, message):
         self.plox.parse_error(token, message)
         return ParseError()
+
+    def declaration(self):
+        try:
+            if self.match(TokenType.VAR):
+                return self.var_declaration()
+
+            return self.statement()
+        except ParseError as error:
+            self.synchronize()
+
+    def var_declaration(self):
+        name = self.consume(TokenType.IDENTIFIER, 'expect variable name')
+        init = self.expression() if self.match(TokenType.EQUAL) else None
+        self.consume(TokenType.SEMICOLON, 'expect ";" after variable declaration')
+
+        return VarStatement(name, init)
 
     def statement(self):
         if self.match(TokenType.PRINT):
@@ -127,6 +143,9 @@ class Parser:
             expr = self.expression()
             self.consume(TokenType.RIGHT_PAREN, 'expected ")" after expression')
             return Grouping(expr)
+
+        if self.match(TokenType.IDENTIFIER):
+            return Variable(self.previous())
 
         raise self.error(self.peek(), 'except expression')
 

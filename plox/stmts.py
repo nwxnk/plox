@@ -1,6 +1,6 @@
 # coding: utf-8
 
-__all__ = ('Statement', 'PrintStatement', 'ExpressionStatement')
+__all__ = ('Statement', 'VarStatement', 'PrintStatement', 'ExpressionStatement')
 
 class Statement:
 	pass
@@ -18,3 +18,11 @@ class ExpressionStatement(Statement):
 
 	def accept(self, visitor):
 		visitor.visit_expression_statement(self)
+
+class VarStatement(Statement):
+	def __init__(self, name, expr):
+		self.name = name
+		self.initializer = expr
+
+	def accept(self, visitor):
+		pass
