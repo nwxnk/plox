@@ -3,8 +3,6 @@
 import sys
 import signal
 
-from plox.token import TokenType
-
 from plox.parser import Parser
 from plox.scanner import Scanner
 from plox.interpreter import Interpreter
@@ -42,21 +40,22 @@ class PLox:
 
     def scan_error(self, line, message):
         self.report(line, '', message)
+        self.error_occured = True
 
     def parse_error(self, token, message):
-        where = 'at end' if token.type == TokenType.EOF else f"at '{token.lexeme}'"
+        where = 'at end' if token.type.name == 'EOF' else f"at '{token.lexeme}'"
         self.report(token.line, where, message)
+        self.error_occured = True
 
     def runtime_error(self, error):
         self.report(error.token.line, '', str(error))
         self.runtime_error_occured = True
 
-    def report(self, line, where, message):
-        print(f'l{line} error: {where} {message}', file=sys.stderr)
-        self.error_occured = True
+    def report(self, line, where, message, ofile=sys.stderr):
+        print(f'line {line}: {where} {message}', file=ofile)
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
         PLox().run_prompt()
-    else:
-        PLox().run_file(sys.argv[1])
+
+    PLox().run_file(sys.argv[1])

@@ -15,7 +15,7 @@ def stringify(object):
     if object is None:
         return 'nil'
 
-    return str(object)
+    return {'True': 'true', 'False': 'false'}.get(str(object), str(object))
 
 def check_number_operands(operator, *operands):
     if all(map(lambda o: isinstance(o, Number), operands)):
@@ -57,8 +57,10 @@ class Interpreter:
     def visit_binary(self, expr):
         left = self.evaluate(expr.left)
         right = self.evaluate(expr.right)
-
         t_type = expr.operator.type
+
+        if t_type not in [TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL, TokenType.PLUS]:
+            check_number_operands(expr.operator, left, right)
 
         if t_type is TokenType.EQUAL_EQUAL:
             return left == right
@@ -67,31 +69,24 @@ class Interpreter:
             return not (left == right)
 
         elif t_type is TokenType.LESS:
-            check_number_operands(expr.operator, left, right)
             return left < right
 
         elif t_type is TokenType.GREATER:
-            check_number_operands(expr.operator, left, right)
             return left > right
 
         elif t_type is TokenType.LESS_EQUAL:
-            check_number_operands(expr.operator, left, right)
             return left <= right
 
         elif t_type is TokenType.GREATER_EQUAL:
-            check_number_operands(expr.operator, left, right)
             return left >= right
 
         elif t_type is TokenType.STAR:
-            check_number_operands(expr.operator, left, right)
             return left * right
 
         elif t_type is TokenType.SLASH:
-            check_number_operands(expr.operator, left, right)
             return left / right
 
         elif t_type is TokenType.MINUS:
-            check_number_operands(expr.operator, left, right)
             return left - right
 
         elif t_type is TokenType.PLUS:
