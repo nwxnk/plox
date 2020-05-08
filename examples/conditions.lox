@@ -1,8 +1,8 @@
 var variable = 3;
 
 if (variable == 3 and 1 == 1) // {
-	print "bomba";
+    print "bomba";
 // }
 else {
-	print "haha";
+    print "haha";
 }
