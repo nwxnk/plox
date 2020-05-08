@@ -1,0 +1,9 @@
+// ax^2 + bx + c
+//  x^2 + 5x + 6
+
+var a = 1;
+var b = 5;
+var c = 6;
+
+print "    sum of roots: " + (-b / a);
+print "product of roots: " + ( c / a);

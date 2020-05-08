@@ -1,0 +1,8 @@
+var variable = 3;
+
+if (variable == 3 and 1 == 1) // {
+	print "bomba";
+// }
+else {
+	print "haha";
+}
