@@ -111,6 +111,18 @@ class Interpreter:
 
         return value
 
+    def visit_logical(self, expr):
+        left = self.evaluate(expr.left)
+
+        if expr.operator.type == TokenType.OR:
+            if is_truthy(left):
+                return left
+        else:
+            if not is_truthy(left):
+                return left
+
+        return self.evaluate(expr.right)
+
     def visit_binary(self, expr):
         left = self.evaluate(expr.left)
         right = self.evaluate(expr.right)
@@ -173,3 +185,14 @@ class Interpreter:
 
     def visit_block_statement(self, stmt):
         self.execute_block(stmt.statements, Environment(self.environment))
+
+    def visit_if_statement(self, stmt):
+        if is_truthy(self.evaluate(stmt.condition)):
+            self.execute(stmt.then_branch)
+
+        elif stmt.else_branch:
+            self.execute(stmt.else_branch)
+
+    def visit_while_statement(self, stmt):
+        while is_truthy(self.evaluate(stmt.condition)):
+            self.execute(stmt.statement)

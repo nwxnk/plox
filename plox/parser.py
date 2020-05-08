@@ -76,20 +76,71 @@ class Parser:
         return VarStatement(name, init)
 
     def statement(self):
+        if self.match(TokenType.IF): return self.if_statement()
+        if self.match(TokenType.FOR): return self.for_statement()
         if self.match(TokenType.PRINT): return self.print_statement()
-        if self.match(TokenType.LEFT_BRACE): return BlockStatement(self.block_statement())
+        if self.match(TokenType.WHILE): return self.while_statement()
+        if self.match(TokenType.LEFT_BRACE): return self.block_statement()
 
         return self.expression_statement()
+
+    def expression_statement(self):
+        value = self.expression()
+        self.consume(TokenType.SEMICOLON, 'expect ";" after value')
+        return ExpressionStatement(value)
+
+    def for_statement(self):
+        self.consume(TokenType.LEFT_PAREN, 'expect "(" after for')
+
+        if self.match(TokenType.SEMICOLON):
+            init = None
+        elif self.match(TokenType.VAR):
+            init = self.var_declaration()
+        else:
+            init = self.expression_statement()
+
+        condition = Literal(True) if self.check(TokenType.SEMICOLON) else self.expression()
+        self.consume(TokenType.SEMICOLON, 'expect ";" after loop condition')
+
+        increment = None if self.check(TokenType.RIGHT_PAREN) else self.expression()
+        self.consume(TokenType.RIGHT_PAREN, "expect ')' after clauses")
+
+        body = self.statement()
+
+        if increment:
+            body = BlockStatement([body, ExpressionStatement(increment)])
+
+        body = WhileStatement(condition, body)
+
+        if init:
+            body = BlockStatement([init, body])
+
+        return body
+
+    def if_statement(self):
+        self.consume(TokenType.LEFT_PAREN, 'expect "(" after "if"')
+        condition = self.expression()
+        self.consume(TokenType.RIGHT_PAREN, 'expect ")" after if condition')
+
+        else_branch = None
+        then_branch = self.statement()
+
+        if self.match(TokenType.ELSE):
+            else_branch = self.statement()
+
+        return IfStatement(condition, then_branch, else_branch)
 
     def print_statement(self):
         value = self.expression()
         self.consume(TokenType.SEMICOLON, 'expect ";" after value')
         return PrintStatement(value)
 
-    def expression_statement(self):
-        value = self.expression()
-        self.consume(TokenType.SEMICOLON, 'expect ";" after value')
-        return ExpressionStatement(value)
+    def while_statement(self):
+        self.consume(TokenType.LEFT_PAREN, 'expect "(" after while')
+        condition = self.expression()
+        self.consume(TokenType.RIGHT_PAREN, 'expect ")" after while statement')
+
+        return WhileStatement(condition, self.statement())
 
     def block_statement(self):
         statements = []
@@ -97,14 +148,14 @@ class Parser:
         while (not self.is_at_end()) and (not self.check(TokenType.RIGHT_BRACE)):
             statements.append(self.declaration())
 
-        self.consume(TokenType.RIGHT_BRACE, 'except "}" after block')
-        return statements
+        self.consume(TokenType.RIGHT_BRACE, 'expect "}" after block')
+        return BlockStatement(statements)
 
     def expression(self):
         return self.assignment()
 
     def assignment(self):
-        expr = self.equality()
+        expr = self.or_expr()
 
         if self.match(TokenType.EQUAL):
             equals = self.previous()
@@ -114,6 +165,22 @@ class Parser:
                 return Assignment(expr.name, value)
 
             self.error(equals, 'invalid assignment target')
+
+        return expr
+
+    def or_expr(self):
+        expr = self.and_expr()
+
+        while self.match(TokenType.OR):
+            expr = Logical(expr, self.previous(), self.and_expr())
+
+        return expr
+
+    def and_expr(self):
+        expr = self.equality()
+
+        while self.match(TokenType.AND):
+            expr = Logical(expr, self.previous(), self.equality())
 
         return expr
 
@@ -171,7 +238,7 @@ class Parser:
         if self.match(TokenType.IDENTIFIER):
             return Variable(self.previous())
 
-        raise self.error(self.peek(), 'except expression')
+        raise self.error(self.peek(), 'expect expression')
 
     def synchronize(self):
         self.advance()
