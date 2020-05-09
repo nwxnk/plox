@@ -4,6 +4,7 @@ import sys
 import signal
 
 from plox.parser import Parser
+from plox.native import init_functions
 from plox.scanner import Scanner
 from plox.interpreter import Interpreter
 
@@ -11,7 +12,7 @@ signal.signal(signal.SIGINT, lambda *f: exit(0))
 
 class PLox:
     def __init__(self):
-        self.interpreter = Interpreter(self)
+        self.interpreter = init_functions(Interpreter(self))
         self.error_occured = False
         self.runtime_error_occured = False
 

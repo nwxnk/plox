@@ -8,10 +8,6 @@ from plox.callable import LoxCallable
 from plox.callable import LoxFunction
 from plox.environment import Environment
 
-clock_func = LoxCallable()
-clock_func.arity = lambda: 0
-clock_func.call  = lambda *d: __import__('time').time()
-
 def is_truthy(object):
     return bool(object)
 
@@ -35,8 +31,6 @@ class Interpreter:
         self.plox = plox
         self.globals = Environment()
         self.environment = self.globals
-
-        self.globals.define("clock", clock_func)
 
     def interpret(self, statements):
         try:
