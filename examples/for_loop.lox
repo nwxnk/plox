@@ -1,7 +1,9 @@
 var sum = 0;
+var t0_ = clock();
 
-for (var i = 0; i < 10; i = i + 1) // {
+for (var i = 0; i < 1000000; i = i + 1) {
     sum = sum + i;
-// }
+}
 
-print "sum: " + sum;
+print "    sum: " + sum;
+print "elapsed: " + (clock() - t0_);
