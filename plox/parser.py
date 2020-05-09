@@ -2,10 +2,8 @@
 
 from plox.exprs import *
 from plox.stmts import *
+from plox.error import ParseError
 from plox.token import Token, TokenType
-
-class ParseError(Exception):
-    pass
 
 class Parser:
     __current = 0
@@ -13,14 +11,6 @@ class Parser:
     def __init__(self, plox, tokens):
         self.plox = plox
         self.tokens = tokens
-
-    def parse(self):
-        statements = []
-
-        while not self.is_at_end():
-            statements.append(self.declaration())
-
-        return statements
 
     def is_at_end(self):
         return self.__current >= len(self.tokens) or \
@@ -59,6 +49,14 @@ class Parser:
         self.plox.parse_error(token, message)
         return ParseError()
 
+    def parse(self):
+        statements = []
+
+        while not self.is_at_end():
+            statements.append(self.declaration())
+
+        return [] if self.plox.error_occured else statements
+
     def declaration(self):
         try:
             if self.match(TokenType.VAR):
@@ -78,6 +76,7 @@ class Parser:
     def statement(self):
         if self.match(TokenType.IF): return self.if_statement()
         if self.match(TokenType.FOR): return self.for_statement()
+        if self.match(TokenType.FUN): return self.function('function')
         if self.match(TokenType.PRINT): return self.print_statement()
         if self.match(TokenType.WHILE): return self.while_statement()
         if self.match(TokenType.LEFT_BRACE): return self.block_statement()
@@ -88,6 +87,25 @@ class Parser:
         value = self.expression()
         self.consume(TokenType.SEMICOLON, 'expect ";" after value')
         return ExpressionStatement(value)
+
+    def function(self, kind):
+        parameters = []
+
+        name = self.consume(TokenType.IDENTIFIER, f'expect {kind} name')
+        self.consume(TokenType.LEFT_PAREN, f'expect "(" after {kind} name)')
+
+        if not self.check(TokenType.RIGHT_PAREN):
+            param = self.consume(TokenType.IDENTIFIER, 'expect parameter name')
+            parameters.append(param)
+
+            while self.match(TokenType.COMMA):
+                param = self.consume(TokenType.IDENTIFIER, 'expect parameter name')
+                parameters.append(param)
+
+        self.consume(TokenType.RIGHT_PAREN, 'expect ")" after parameters')
+        self.advance()
+
+        return FunctionStatement(name, parameters,  self.block_statement())
 
     def for_statement(self):
         self.consume(TokenType.LEFT_PAREN, 'expect "(" after for')
@@ -145,7 +163,7 @@ class Parser:
     def block_statement(self):
         statements = []
 
-        while (not self.is_at_end()) and (not self.check(TokenType.RIGHT_BRACE)):
+        while (not self.check(TokenType.RIGHT_BRACE)) and (not self.is_at_end()):
             statements.append(self.declaration())
 
         self.consume(TokenType.RIGHT_BRACE, 'expect "}" after block')
@@ -220,7 +238,29 @@ class Parser:
         if self.match(TokenType.BANG, TokenType.MINUS):
             return Unary(self.previous(), self.unary())
 
-        return self.primary()
+        return self.call()
+
+    def call(self):
+        expr = self.primary()
+
+        while True:
+            if self.match(TokenType.LEFT_PAREN):
+                expr = self.finish_call(expr)
+            else:
+                break
+
+        return expr
+
+    def finish_call(self, callee):
+        arguments = []
+
+        if not self.check(TokenType.RIGHT_PAREN):
+            arguments.append(self.expression())
+
+            while self.match(TokenType.COMMA):
+                arguments.append(self.expression())
+
+        return Call(callee, self.consume(TokenType.RIGHT_PAREN, 'expect ")" after arguments'), arguments)
 
     def primary(self):
         if self.match(TokenType.NIL): return Literal(None)

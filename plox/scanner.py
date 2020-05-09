@@ -66,7 +66,7 @@ class Scanner:
         elif char.isalpha():
             self._identifier(); return
 
-        self.plox.scan_error(self.__line, 'unexpected character')
+        self.plox.scan_error(self.__line, f'{char} unexpected character')
 
     def scan_tokens(self):
         while not self.is_at_end():
@@ -137,7 +137,7 @@ class Scanner:
         self.add_token(TokenType.NUMBER, number)
 
     def _identifier(self):
-        while self.peek().isalnum():
+        while self.peek().isalnum() or self.peek() == '_':
             self.advance()
 
         self.add_token(

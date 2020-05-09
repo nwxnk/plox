@@ -1,12 +1,16 @@
 # coding: utf-8
 
 from numbers import Number
-from plox.token import TokenType
 
-class RuntimeError(Exception):
-    def __init__(self, token, message):
-        super().__init__(message)
-        self.token = token
+from plox.token import TokenType
+from plox.error import RuntimeError
+from plox.callable import LoxCallable
+from plox.callable import LoxFunction
+from plox.environment import Environment
+
+clock_func = LoxCallable()
+clock_func.arity = lambda: 0
+clock_func.call  = lambda *d: __import__('time').time()
 
 def is_truthy(object):
     return bool(object)
@@ -26,37 +30,13 @@ def check_number_operands(operator, *operands):
 
     raise RuntimeError(operator, 'operands must be numbers')
 
-class Environment:
-    def __init__(self, enclosing=None):
-        self.__values = {}
-        self.enclosing = enclosing
-
-    def define(self, name, value):
-        self.__values[name.lexeme] = value
-
-    def get(self, name):
-        try:
-            return self.__values[name.lexeme]
-        except KeyError:
-
-            if self.enclosing:
-                return self.enclosing.get(name)
-
-            raise RuntimeError(name, f'undefined variable "{name.lexeme}"')
-
-    def assign(self, name, value):
-        if name.lexeme in self.__values:
-            self.__values[name.lexeme] = value; return
-
-        if self.enclosing:
-            self.enclosing.assign(name, value); return
-
-        raise RuntimeError(name, f'undefined variable "{name.lexeme}"')
-
 class Interpreter:
     def __init__(self, plox):
         self.plox = plox
-        self.environment = Environment()
+        self.globals = Environment()
+        self.environment = self.globals
+
+        self.globals.define("clock", clock_func)
 
     def interpret(self, statements):
         try:
@@ -123,54 +103,54 @@ class Interpreter:
 
         return self.evaluate(expr.right)
 
+    def visit_call(self, expr):
+        function  = self.evaluate(expr.callee)
+        arguments = [self.evaluate(arg) for arg in expr.arguments]
+
+        if not isinstance(function, LoxCallable):
+            raise RuntimeError(expr.paren, 'can only call functions and classes')
+
+        if len(arguments) != function.arity():
+            raise RuntimeError(
+                expr.paren, f'expected {function.arity()} arguments but got {len(arguments)}')
+
+        return function.call(self, arguments)
+
+    def _plus(self, left, right):
+        try:
+            if isinstance(left, str) or isinstance(right, str):
+                return f'{left}{right}'
+
+            return left + right
+        except TypeError:
+            raise RuntimeError(expr.operator, 'operands must be numbers or strings')
+
     def visit_binary(self, expr):
-        left = self.evaluate(expr.left)
-        right = self.evaluate(expr.right)
+        left   = self.evaluate(expr.left)
+        right  = self.evaluate(expr.right)
         t_type = expr.operator.type
 
         if t_type not in [TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL, TokenType.PLUS]:
             check_number_operands(expr.operator, left, right)
 
-        if t_type is TokenType.EQUAL_EQUAL:
-            return left == right
-
-        elif t_type is TokenType.BANG_EQUAL:
-            return not (left == right)
-
-        elif t_type is TokenType.LESS:
-            return left < right
-
-        elif t_type is TokenType.GREATER:
-            return left > right
-
-        elif t_type is TokenType.LESS_EQUAL:
-            return left <= right
-
-        elif t_type is TokenType.GREATER_EQUAL:
-            return left >= right
-
-        elif t_type is TokenType.STAR:
-            return left * right
-
-        elif t_type is TokenType.SLASH:
-            return left / right
-
-        elif t_type is TokenType.MINUS:
-            return left - right
-
-        elif t_type is TokenType.PLUS:
-            try:
-                if isinstance(left, str) or isinstance(right, str):
-                    return f'{left}{right}'
-
-                return left + right
-            except TypeError:
-                raise RuntimeError(expr.operator, 'operands must be numbers or strings')
-
-        return None
+        return {
+            TokenType.LESS         : lambda: left < right,
+            TokenType.GREATER      : lambda: left > right,
+            TokenType.STAR         : lambda: left * right,
+            TokenType.SLASH        : lambda: left / right,
+            TokenType.MINUS        : lambda: left - right,
+            TokenType.EQUAL_EQUAL  : lambda: left == right,
+            TokenType.LESS_EQUAL   : lambda: left <= right,
+            TokenType.GREATER_EQUAL: lambda: left >= right,
+            TokenType.BANG_EQUAL   : lambda: not (left == right),
+            TokenType.PLUS         : lambda: self._plus(left, right)
+        }.get(t_type, lambda: None)()
 
     def visit_expression_statement(self, stmt):
         self.evaluate(stmt.expression)
+
+    def visit_function_statement(self, stmt):
+        self.environment.define(stmt.name.lexeme, LoxFunction(stmt))
 
     def visit_print_statement(self, stmt):
         print(stringify(self.evaluate(stmt.expression)))
@@ -181,7 +161,7 @@ class Interpreter:
         if stmt.initializer:
             value = self.evaluate(stmt.initializer)
 
-        self.environment.define(stmt.name, value)
+        self.environment.define(stmt.name.lexeme, value)
 
     def visit_block_statement(self, stmt):
         self.execute_block(stmt.statements, Environment(self.environment))

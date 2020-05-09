@@ -2,7 +2,7 @@
 
 __all__ = (
     'Statement', 'VarStatement', 'IfStatement', 'WhileStatement',
-    'BlockStatement', 'PrintStatement', 'ExpressionStatement'
+    'FunctionStatement', 'BlockStatement', 'PrintStatement', 'ExpressionStatement'
 )
 
 class Statement:
@@ -21,6 +21,15 @@ class ExpressionStatement(Statement):
 
     def accept(self, visitor):
         visitor.visit_expression_statement(self)
+
+class FunctionStatement(Statement):
+    def __init__(self, name, params, body):
+        self.name = name
+        self.body = body
+        self.params = params
+
+    def accept(self, visitor):
+        visitor.visit_function_statement(self)
 
 class VarStatement(Statement):
     def __init__(self, name, expr):
