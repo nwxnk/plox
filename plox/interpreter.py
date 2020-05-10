@@ -3,10 +3,11 @@
 from numbers import Number
 
 from plox.token import TokenType
-from plox.error import RuntimeError
 from plox.callable import LoxCallable
 from plox.callable import LoxFunction
 from plox.environment import Environment
+
+from plox.error import Return, RuntimeError
 
 def is_truthy(object):
     return bool(object)
@@ -40,7 +41,8 @@ class Interpreter:
             self.plox.runtime_error(error)
 
     def evaluate(self, expr):
-        return expr.accept(self)
+        if expr:
+            return expr.accept(self)
 
     def execute(self, stmt):
         if stmt:
@@ -144,10 +146,13 @@ class Interpreter:
         self.evaluate(stmt.expression)
 
     def visit_function_statement(self, stmt):
-        self.environment.define(stmt.name.lexeme, LoxFunction(stmt))
+        self.environment.define(stmt.name.lexeme, LoxFunction(stmt, self.environment))
 
     def visit_print_statement(self, stmt):
         print(stringify(self.evaluate(stmt.expression)))
+
+    def visit_return_statement(self, stmt):
+        raise Return(self.evaluate(stmt.value))
 
     def visit_var_statement(self, stmt):
         value = None
