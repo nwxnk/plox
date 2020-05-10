@@ -84,102 +84,6 @@ class Parser:
 
         return self.expression_statement()
 
-    def expression_statement(self):
-        value = self.expression()
-        self.consume(TokenType.SEMICOLON, 'expect ";" after value')
-        return ExpressionStatement(value)
-
-    def function(self, kind):
-        parameters = []
-
-        name = self.consume(TokenType.IDENTIFIER, f'expect {kind} name')
-        self.consume(TokenType.LEFT_PAREN, f'expect "(" after {kind} name)')
-
-        if not self.check(TokenType.RIGHT_PAREN):
-            param = self.consume(TokenType.IDENTIFIER, 'expect parameter name')
-            parameters.append(param)
-
-            while self.match(TokenType.COMMA):
-                param = self.consume(TokenType.IDENTIFIER, 'expect parameter name')
-                parameters.append(param)
-
-        self.consume(TokenType.RIGHT_PAREN, 'expect ")" after parameters')
-        self.advance()
-
-        return FunctionStatement(name, parameters,  self.block_statement())
-
-    def for_statement(self):
-        self.consume(TokenType.LEFT_PAREN, 'expect "(" after for')
-
-        if self.match(TokenType.SEMICOLON):
-            init = None
-        elif self.match(TokenType.VAR):
-            init = self.var_declaration()
-        else:
-            init = self.expression_statement()
-
-        condition = Literal(True) if self.check(TokenType.SEMICOLON) else self.expression()
-        self.consume(TokenType.SEMICOLON, 'expect ";" after loop condition')
-
-        increment = None if self.check(TokenType.RIGHT_PAREN) else self.expression()
-        self.consume(TokenType.RIGHT_PAREN, "expect ')' after clauses")
-
-        body = self.statement()
-
-        if increment:
-            body = BlockStatement([body, ExpressionStatement(increment)])
-
-        body = WhileStatement(condition, body)
-
-        if init:
-            body = BlockStatement([init, body])
-
-        return body
-
-    def if_statement(self):
-        self.consume(TokenType.LEFT_PAREN, 'expect "(" after "if"')
-        condition = self.expression()
-        self.consume(TokenType.RIGHT_PAREN, 'expect ")" after if condition')
-
-        else_branch = None
-        then_branch = self.statement()
-
-        if self.match(TokenType.ELSE):
-            else_branch = self.statement()
-
-        return IfStatement(condition, then_branch, else_branch)
-
-    def print_statement(self):
-        value = self.expression()
-        self.consume(TokenType.SEMICOLON, 'expect ";" after value')
-        return PrintStatement(value)
-
-    def return_statement(self):
-        value = None
-        token = self.previous()
-
-        if not self.check(TokenType.SEMICOLON):
-            value = self.expression()
-
-        self.consume(TokenType.SEMICOLON, 'expect ";" after return')
-        return ReturnStatement(token, value)
-
-    def while_statement(self):
-        self.consume(TokenType.LEFT_PAREN, 'expect "(" after while')
-        condition = self.expression()
-        self.consume(TokenType.RIGHT_PAREN, 'expect ")" after while statement')
-
-        return WhileStatement(condition, self.statement())
-
-    def block_statement(self):
-        statements = []
-
-        while (not self.check(TokenType.RIGHT_BRACE)) and (not self.is_at_end()):
-            statements.append(self.declaration())
-
-        self.consume(TokenType.RIGHT_BRACE, 'expect "}" after block')
-        return BlockStatement(statements)
-
     def expression(self):
         return self.assignment()
 
@@ -256,9 +160,9 @@ class Parser:
 
         while True:
             if self.match(TokenType.LEFT_PAREN):
-                expr = self.finish_call(expr)
-            else:
-                break
+                expr = self.finish_call(expr); continue
+
+            break
 
         return expr
 
@@ -278,6 +182,9 @@ class Parser:
         if self.match(TokenType.TRUE): return Literal(True)
         if self.match(TokenType.FALSE): return Literal(False) 
 
+        if self.match(TokenType.IDENTIFIER):
+            return Variable(self.previous())
+
         if self.match(TokenType.NUMBER, TokenType.STRING):
             return Literal(self.previous().literal)
 
@@ -286,10 +193,99 @@ class Parser:
             self.consume(TokenType.RIGHT_PAREN, 'expected ")" after expression')
             return Grouping(expr)
 
-        if self.match(TokenType.IDENTIFIER):
-            return Variable(self.previous())
-
         raise self.error(self.peek(), 'expect expression')
+
+    def expression_statement(self):
+        value = self.expression()
+        self.consume(TokenType.SEMICOLON, 'expect ";" after value')
+        return ExpressionStatement(value)
+
+    def function(self, kind):
+        parameters = []
+
+        name = self.consume(TokenType.IDENTIFIER, f'expect {kind} name')
+        self.consume(TokenType.LEFT_PAREN, f'expect "(" after {kind} name)')
+
+        if not self.check(TokenType.RIGHT_PAREN):
+            param = self.consume(TokenType.IDENTIFIER, 'expect parameter name')
+            parameters.append(param)
+
+            while self.match(TokenType.COMMA):
+                param = self.consume(TokenType.IDENTIFIER, 'expect parameter name')
+                parameters.append(param)
+
+        self.consume(TokenType.RIGHT_PAREN, 'expect ")" after parameters')
+        self.advance()
+
+        return FunctionStatement(name, parameters,  self.block_statement())
+
+    def for_statement(self):
+        self.consume(TokenType.LEFT_PAREN, 'expect "(" after for')
+
+        if self.match(TokenType.SEMICOLON): init = None
+        elif self.match(TokenType.VAR)    : init = self.var_declaration()
+        else                              : init = self.expression_statement()
+
+        condition = Literal(True) if self.check(TokenType.SEMICOLON) else self.expression()
+        self.consume(TokenType.SEMICOLON, 'expect ";" after loop condition')
+
+        increment = None if self.check(TokenType.RIGHT_PAREN) else self.expression()
+        self.consume(TokenType.RIGHT_PAREN, "expect ')' after clauses")
+
+        return BlockStatement([
+            init, 
+            WhileStatement(
+                condition, 
+                BlockStatement([
+                    self.statement(), 
+                    ExpressionStatement(increment)
+                ])
+            )
+        ])
+
+    def if_statement(self):
+        self.consume(TokenType.LEFT_PAREN, 'expect "(" after "if"')
+        condition = self.expression()
+        self.consume(TokenType.RIGHT_PAREN, 'expect ")" after if condition')
+
+        else_branch = None
+        then_branch = self.statement()
+
+        if self.match(TokenType.ELSE):
+            else_branch = self.statement()
+
+        return IfStatement(condition, then_branch, else_branch)
+
+    def print_statement(self):
+        value = self.expression()
+        self.consume(TokenType.SEMICOLON, 'expect ";" after value')
+        return PrintStatement(value)
+
+    def return_statement(self):
+        value = None
+        token = self.previous()
+
+        if not self.check(TokenType.SEMICOLON):
+            value = self.expression()
+
+        self.consume(TokenType.SEMICOLON, 'expect ";" after return')
+        return ReturnStatement(token, value)
+
+    def while_statement(self):
+        self.consume(TokenType.LEFT_PAREN, 'expect "(" after while')
+        condition = self.expression()
+        self.consume(TokenType.RIGHT_PAREN, 'expect ")" after while statement')
+
+        return WhileStatement(condition, self.statement())
+
+    def block_statement(self):
+        statements = []
+
+        while (not self.check(TokenType.RIGHT_BRACE)) and (not self.is_at_end()):
+            statements.append(self.declaration())
+
+        self.consume(TokenType.RIGHT_BRACE, 'expect "}" after block')
+        return BlockStatement(statements)
 
     def synchronize(self):
         self.advance()
