@@ -1,0 +1,33 @@
+fun pow_(x, u) {
+    var ret = 1;
+
+    for (var i = 0; i < u; i = i + 1) {
+        ret = ret * x;
+    }
+
+    return ret;
+}
+
+fun sqrt(x, max, f_pow) {
+    var ret = 1;
+
+    for (var i = 0; i < max; i = i + 1) {
+        ret = ret - (f_pow(ret, 2) - x) / (2 * ret);
+    }
+
+    return ret;
+}
+
+fun main() {
+    var number = input("number: ");
+
+    var t0 = clock();
+    print "  sqrt: " + sqrt(number, 1000, pow); print ""; // i need escape characters D:
+    print "elapsed time for pow : " + (clock() - t0);
+
+    var t0 = clock();
+    sqrt(number, 1000, pow_);
+    print "elapsed time for pow_: " + (clock() - t0);
+}
+
+main();
