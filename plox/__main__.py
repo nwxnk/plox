@@ -2,6 +2,7 @@
 
 import sys
 import signal
+import readline
 
 from plox.parser import Parser
 from plox.native import init_functions
@@ -38,7 +39,7 @@ class PLox:
             sys.exit(70)
 
     def scan_error(self, line, message):
-        self.report(line, '', message)
+        self.report(line, '\b', message)
         self.error_occured = True
 
     def parse_error(self, token, message):
@@ -47,7 +48,7 @@ class PLox:
         self.error_occured = True
 
     def runtime_error(self, error):
-        self.report(error.token.line, '', str(error))
+        self.report(error.token.line, '\b', f'"{error.token.lexeme}" {error.message}')
         self.runtime_error_occured = True
 
     def report(self, line, where, message, ofile=sys.stderr):
