@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from plox.error import Return
+from plox.error import ReturnException
 from plox.environment import Environment
 
 class LoxCallable:
@@ -29,5 +29,5 @@ class LoxFunction(LoxCallable):
 
         try:
             interpreter.execute_block(self.declaration.body.statements, environment)
-        except Return as ret:
+        except ReturnException as ret:
             return ret.value

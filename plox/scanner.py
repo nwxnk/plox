@@ -13,22 +13,24 @@ class Scanner:
         self.source = source
 
         self._reserved_words = {
-            'if'    : TokenType.IF,
-            'or'    : TokenType.OR,
-            'and'   : TokenType.AND,
-            'nil'   : TokenType.NIL,
-            'fun'   : TokenType.FUN,
-            'for'   : TokenType.FOR,
-            'var'   : TokenType.VAR,
-            'true'  : TokenType.TRUE,
-            'this'  : TokenType.THIS,
-            'else'  : TokenType.ELSE,
-            'print' : TokenType.PRINT,
-            'super' : TokenType.SUPER,
-            'false' : TokenType.FALSE,
-            'while' : TokenType.WHILE,
-            'class' : TokenType.CLASS,
-            'return': TokenType.RETURN
+            'if'      : TokenType.IF,
+            'or'      : TokenType.OR,
+            'and'     : TokenType.AND,
+            'nil'     : TokenType.NIL,
+            'fun'     : TokenType.FUN,
+            'for'     : TokenType.FOR,
+            'var'     : TokenType.VAR,
+            'true'    : TokenType.TRUE,
+            'this'    : TokenType.THIS,
+            'else'    : TokenType.ELSE,
+            'break'   : TokenType.BREAK,
+            'print'   : TokenType.PRINT,
+            'super'   : TokenType.SUPER,
+            'false'   : TokenType.FALSE,
+            'while'   : TokenType.WHILE,
+            'class'   : TokenType.CLASS,
+            'return'  : TokenType.RETURN,
+            'continue': TokenType.CONTINUE
         }
 
         self._token_dict = {

@@ -1,8 +1,10 @@
 # coding: utf-8
 
 __all__ = (
-    'Statement', 'VarStatement', 'IfStatement', 'WhileStatement', 'PrintStatement',
-    'FunctionStatement', 'BlockStatement', 'ReturnStatement', 'ExpressionStatement'
+    'Statement', 'VarStatement', 'IfStatement', 
+    'WhileStatement', 'PrintStatement', 'BreakStatement', 
+    'FunctionStatement', 'BlockStatement', 'ReturnStatement', 
+    'ExpressionStatement', 'ContinueStatement'
 )
 
 class Statement:
@@ -21,6 +23,20 @@ class ExpressionStatement(Statement):
 
     def accept(self, visitor):
         visitor.visit_expression_statement(self)
+
+class BreakStatement(Statement):
+    def __init__(self, token):
+        self.token = token
+
+    def accept(self, visitor):
+        visitor.visit_break_statement(self)
+
+class ContinueStatement(Statement):
+    def __init__(self, token):
+        self.token = token
+
+    def accept(self, visitor):
+        visitor.visit_continue_statement(self)
 
 class ReturnStatement(Statement):
     def __init__(self, token, value):

@@ -78,8 +78,10 @@ class Parser:
         if self.match(TokenType.FOR): return self.for_statement()
         if self.match(TokenType.FUN): return self.function('function')
         if self.match(TokenType.PRINT): return self.print_statement()
+        if self.match(TokenType.BREAK): return self.break_statement()
         if self.match(TokenType.WHILE): return self.while_statement()
         if self.match(TokenType.RETURN): return self.return_statement()
+        if self.match(TokenType.CONTINUE): return self.continue_statement()
         if self.match(TokenType.LEFT_BRACE): return self.block_statement()
 
         return self.expression_statement()
@@ -270,6 +272,18 @@ class Parser:
 
         self.consume(TokenType.SEMICOLON, 'expect ";" after return')
         return ReturnStatement(token, value)
+
+    def break_statement(self):
+        token = self.previous()
+        self.consume(TokenType.SEMICOLON, 'expect ";" after break')
+
+        return BreakStatement(token)
+
+    def continue_statement(self):
+        token = self.previous()
+        self.consume(TokenType.SEMICOLON, 'expect ";" after continue')
+
+        return ContinueStatement(token)
 
     def while_statement(self):
         self.consume(TokenType.LEFT_PAREN, 'expect "(" after while')

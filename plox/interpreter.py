@@ -7,7 +7,10 @@ from plox.callable import LoxCallable
 from plox.callable import LoxFunction
 from plox.environment import Environment
 
-from plox.error import Return, RuntimeError
+from plox.error import (
+    ReturnException, BreakException, 
+    RuntimeError, ContinueException
+)
 
 def is_truthy(object):
     return bool(object)
@@ -151,8 +154,14 @@ class Interpreter:
     def visit_print_statement(self, stmt):
         print(stringify(self.evaluate(stmt.expression)))
 
+    def visit_break_statement(self, stmt):
+        raise BreakException()
+
+    def visit_continue_statement(self, stmt):
+        raise ContinueException()
+
     def visit_return_statement(self, stmt):
-        raise Return(self.evaluate(stmt.value))
+        raise ReturnException(self.evaluate(stmt.value))
 
     def visit_var_statement(self, stmt):
         value = None
@@ -174,4 +183,9 @@ class Interpreter:
 
     def visit_while_statement(self, stmt):
         while is_truthy(self.evaluate(stmt.condition)):
-            self.execute(stmt.statement)
+            try:
+                self.execute(stmt.statement)
+            except BreakException:
+                break
+            except ContinueException:
+                continue
