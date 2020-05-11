@@ -115,21 +115,20 @@ class Interpreter:
 
         return function.call(self, arguments)
 
-    def _plus(self, left, right):
+    def _plus(self, left, right, operator):
         try:
             if isinstance(left, str) or isinstance(right, str):
                 return f'{left}{right}'
 
             return left + right
         except TypeError:
-            raise RuntimeError(expr.operator, 'operands must be numbers or strings')
+            raise RuntimeError(operator, 'operands must be numbers or strings')
 
     def visit_binary(self, expr):
         left   = self.evaluate(expr.left)
         right  = self.evaluate(expr.right)
-        t_type = expr.operator.type
 
-        if t_type not in [TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL, TokenType.PLUS]:
+        if expr.operator.type not in [TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL, TokenType.PLUS]:
             check_number_operands(expr.operator, left, right)
 
         return {
@@ -142,8 +141,8 @@ class Interpreter:
             TokenType.LESS_EQUAL   : lambda: left <= right,
             TokenType.GREATER_EQUAL: lambda: left >= right,
             TokenType.BANG_EQUAL   : lambda: not (left == right),
-            TokenType.PLUS         : lambda: self._plus(left, right)
-        }.get(t_type, lambda: None)()
+            TokenType.PLUS         : lambda: self._plus(left, right, expr.operator)
+        }.get(expr.operator.type, lambda: None)()
 
     def visit_expression_statement(self, stmt):
         self.evaluate(stmt.expression)
