@@ -209,12 +209,12 @@ class Parser:
         self.consume(TokenType.LEFT_PAREN, f'expect "(" after {kind} name)')
 
         if not self.check(TokenType.RIGHT_PAREN):
-            param = self.consume(TokenType.IDENTIFIER, 'expect parameter name')
-            parameters.append(param)
+            while True:
+                parameters.append(
+                    self.consume(TokenType.IDENTIFIER, 'expect parameter name'))
 
-            while self.match(TokenType.COMMA):
-                param = self.consume(TokenType.IDENTIFIER, 'expect parameter name')
-                parameters.append(param)
+                if not self.match(TokenType.COMMA):
+                    break
 
         self.consume(TokenType.RIGHT_PAREN, 'expect ")" after parameters')
         self.advance()
@@ -240,7 +240,7 @@ class Parser:
                 condition, 
                 BlockStatement([
                     self.statement(), 
-                    ExpressionStatement(increment)
+                    increment
                 ])
             )
         ])
