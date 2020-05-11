@@ -1,12 +1,5 @@
 # coding: utf-8
 
-__all__ = (
-    'Statement', 'VarStatement', 'IfStatement', 
-    'WhileStatement', 'PrintStatement', 'BreakStatement', 
-    'FunctionStatement', 'BlockStatement', 'ReturnStatement', 
-    'ExpressionStatement', 'ContinueStatement'
-)
-
 class Statement:
     pass
 
