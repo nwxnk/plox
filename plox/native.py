@@ -19,6 +19,13 @@ class Pow(LoxCallable):
     def call(self, interpreter, arguments):
         return pow(*arguments)
 
+class Exit(LoxCallable):
+    def arity(self):
+        return 1
+
+    def call(self, interpreter, arguments):
+        exit(arguments[0])
+
 class Clock(LoxCallable):
     def arity(self):
         return 0
@@ -40,6 +47,7 @@ def init_functions(interpreter):
     functions = {
         'abs'  : Abs(),
         'pow'  : Pow(),
+        'exit' : Exit(),
         'clock': Clock(),
         'input': Input()
     }
