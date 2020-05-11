@@ -1,52 +1,23 @@
 # coding: utf-8
 
-from enum import auto, Enum
+from enum import Enum
 
-class TokenType(Enum):
-    EOF      = auto()
-    AND      = auto()
-    CLASS    = auto()
-    ELSE     = auto()
-    FALSE    = auto()
-    FUN      = auto()
-    FOR      = auto()
-    IF       = auto()
-    NIL      = auto()
-    OR       = auto()
-    PRINT    = auto()
-    BREAK    = auto()
-    RETURN   = auto()
-    CONTINUE = auto()
-    SUPER    = auto()
-    THIS     = auto()
-    TRUE     = auto()
-    VAR      = auto()
-    WHILE    = auto()
+TokenType = Enum(
+    'TokenType', 
+    '''
+    IDENTIFIER STRING NUMBER  
 
-    IDENTIFIER = auto()
-    STRING     = auto()
-    NUMBER     = auto()
+    BANG BANG_EQUAL EQUAL EQUAL_EQUAL  
+    GREATER GREATER_EQUAL LESS LESS_EQUAL
 
-    LEFT_PAREN  = auto()
-    RIGHT_PAREN = auto()
-    LEFT_BRACE  = auto()
-    RIGHT_BRACE = auto()
-    COMMA       = auto()
-    DOT         = auto()
-    MINUS       = auto()
-    PLUS        = auto()
-    SEMICOLON   = auto()
-    SLASH       = auto()
-    STAR        = auto()
+    COMMA DOT MINUS PLUS SEMICOLON SLASH STAR  
+    LEFT_PAREN RIGHT_PAREN LEFT_BRACE RIGHT_BRACE
 
-    BANG          = auto()
-    BANG_EQUAL    = auto()
-    EQUAL         = auto()
-    EQUAL_EQUAL   = auto()
-    GREATER       = auto()
-    GREATER_EQUAL = auto()
-    LESS          = auto()
-    LESS_EQUAL    = auto()
+    EOF IF CLASS ELSE FALSE FUN FOR
+    AND NIL OR THIS BREAK WHILE VAR
+    CONTINUE SUPER PRINT TRUE RETURN
+    '''
+)
 
 class Token:
     def __init__(self, type, lexeme, literal, line):
