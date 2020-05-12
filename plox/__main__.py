@@ -13,15 +13,15 @@ signal.signal(signal.SIGINT, lambda *f: exit(0))
 
 def get_input():
     braces = 1
-    source = input('>>> ')
+    source = input('>>> ').rstrip()
 
-    if source.rstrip()[-1] != '{':
+    if len(source) == 0 or source[-1] != '{':
         return source
 
     while braces != 0:
-        if value := input('... '):
+        if (value := input('... ').rstrip()):
             source += value
-            braces += {'{': 1, '}': -1}.get(source.rstrip()[-1], 0)
+            braces += {'{': 1, '}': -1}.get(source[-1], 0)
 
     return source
 
