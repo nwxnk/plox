@@ -4,10 +4,10 @@ from plox.error import ReturnException
 from plox.environment import Environment
 
 class LoxCallable:
-    def call(self, interpreter, arguments):
+    def arity(self):
         pass
 
-    def arity(self):
+    def call(self, interpreter, arguments):
         pass
 
 class LoxFunction(LoxCallable):
@@ -16,7 +16,10 @@ class LoxFunction(LoxCallable):
         self.declaration = declaration
 
     def __str__(self):
-        return f'<fn {self.declaration.name.lexeme}>'
+        return '<fn {}({})>'.format(
+            self.declaration.name.lexeme,
+            ', '.join(p.lexeme for p in self.declaration.params)
+        )
 
     def arity(self):
         return len(self.declaration.params)

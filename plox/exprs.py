@@ -10,32 +10,6 @@ class Variable(Expression):
     def accept(self, visitor):
         return visitor.visit_variable(self)
 
-class Logical(Expression):
-    def __init__(self, left, operator, right):
-        self.left = left
-        self.right = right
-        self.operator = operator
-
-    def accept(self, visitor):
-        return visitor.visit_logical(self)
-
-class Assignment(Expression):
-    def __init__(self, name, value):
-        self.name = name
-        self.value = value
-
-    def accept(self, visitor):
-        return visitor.visit_assignment(self)
-
-class Call(Expression):
-    def __init__(self, callee, paren, arguments):
-        self.paren = paren
-        self.callee = callee
-        self.arguments = arguments
-
-    def accept(self, visitor):
-        return visitor.visit_call(self)
-
 class Literal(Expression):
     def __init__(self, value):
         self.value = value
@@ -57,6 +31,32 @@ class Unary(Expression):
 
     def accept(self, visitor):
         return visitor.visit_unary(self)
+
+class Assignment(Expression):
+    def __init__(self, name, value):
+        self.name = name
+        self.value = value
+
+    def accept(self, visitor):
+        return visitor.visit_assignment(self)
+
+class Call(Expression):
+    def __init__(self, callee, paren, arguments):
+        self.paren = paren
+        self.callee = callee
+        self.arguments = arguments
+
+    def accept(self, visitor):
+        return visitor.visit_call(self)
+
+class Logical(Expression):
+    def __init__(self, left, operator, right):
+        self.left = left
+        self.right = right
+        self.operator = operator
+
+    def accept(self, visitor):
+        return visitor.visit_logical(self)
 
 class Binary(Expression):
     def __init__(self, l_expr, operator, r_expr):
