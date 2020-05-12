@@ -11,6 +11,20 @@ from plox.interpreter import Interpreter
 
 signal.signal(signal.SIGINT, lambda *f: exit(0))
 
+def get_input():
+    braces = 1
+    source = input('>>> ')
+
+    if source.rstrip()[-1] != '{':
+        return source
+
+    while braces != 0:
+        if value := input('... '):
+            source += value
+            braces += {'{': 1, '}': -1}.get(source.rstrip()[-1], 0)
+
+    return source
+
 class PLox:
     def __init__(self):
         self.interpreter = init_functions(Interpreter(self))
@@ -24,7 +38,7 @@ class PLox:
 
     def run_prompt(self):
         while True:
-            self.run(input('plox > '))
+            self.run(get_input())
             self.error_occured = False
             self.runtime_error_occured = False
 
