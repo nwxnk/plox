@@ -1,7 +1,10 @@
 # coding: utf-8
 
+from plox.types import FunctionType
+
 class Resolver:
     __scopes = []
+    __currfn = FunctionType.NONE
 
     def __init__(self, plox, interpreter):
         self.plox = plox
@@ -35,7 +38,10 @@ class Resolver:
             if name.lexeme in self.__scopes[i]:
                 self.interpreter.resolve(expr, len(self.__scopes) - 1 - i)
 
-    def resolve_function(self, function):
+    def resolve_function(self, function, fn_type):
+        enclosing_fn = self.__currfn
+        self.__currfn = fn_type
+
         self.begin_scope()
 
         for param in function.params:
@@ -44,6 +50,8 @@ class Resolver:
 
         self.resolve(*function.body.statements)
         self.end_scope()
+
+        self.__currfn = enclosing_fn
 
     def visit_literal(self, expr):
         return None
@@ -85,6 +93,9 @@ class Resolver:
         self.resolve(stmt.expression)
 
     def visit_return_statement(self, stmt):
+        if self.__currfn == FunctionType.NONE:
+            self.plox.resolve_error(stmt.token, 'can not return from top-level code')
+
         return self.resolve(stmt.value) if stmt.value else None
 
     def visit_while_statement(self, stmt):
@@ -104,7 +115,7 @@ class Resolver:
     def visit_function_statement(self, stmt):
         self.declare(stmt.name)
         self.define (stmt.name)
-        self.resolve_function(stmt)
+        self.resolve_function(stmt, FunctionType.FUNCTION)
 
     def visit_if_statement(self, stmt):
         self.resolve(stmt.condition)
