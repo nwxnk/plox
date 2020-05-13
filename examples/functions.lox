@@ -25,7 +25,7 @@ fun main() {
     print "  sqrt: " + sqrt(number, 1000, pow); print ""; // i need escape characters D:
     print "elapsed time for pow : " + (clock() - t0);
 
-    var t0 = clock();
+    t0 = clock();
     sqrt(number, 1000, pow_);
     print "elapsed time for pow_: " + (clock() - t0);
 }
