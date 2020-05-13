@@ -14,7 +14,7 @@ class Environment:
         return self.ancestor(distance).values[name]
 
     def assign_at(self, distance, name, value):
-        self.ancestor(distance).values[name] = value
+        self.ancestor(distance).values[name.lexeme] = value
 
     def ancestor(self, distance):
         env = self

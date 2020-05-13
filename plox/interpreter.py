@@ -2,7 +2,7 @@
 
 from numbers import Number
 
-from plox.token import TokenType
+from plox.types import TokenType
 from plox.callable import LoxCallable
 from plox.callable import LoxFunction
 from plox.environment import Environment
@@ -96,8 +96,8 @@ class Interpreter:
     def visit_assignment(self, expr):
         value = self.evaluate(expr.value)
 
-        if distance := self.locals.get(expr, None):
-            self.environment.assign_at(distance, expr.name. value)
+        if (distance := self.locals.get(expr, None)) is not None:
+            self.environment.assign_at(distance, expr.name, value)
         else:
             self.globals.assign(expr.name, value)
 

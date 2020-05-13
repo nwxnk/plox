@@ -42,7 +42,7 @@ class Resolver:
             self.declare(param)
             self.define (param)
 
-        self.resolve(function.body)
+        self.resolve(*function.body.statements)
         self.end_scope()
 
     def visit_literal(self, expr):
@@ -56,7 +56,7 @@ class Resolver:
 
     def visit_assignment(self, expr):
         self.resolve(expr.value)
-        self.resolve_local(expr.name, expr)
+        self.resolve_local(expr, expr.name)
 
     def visit_binary(self, expr):
         self.resolve(expr.left)
@@ -89,7 +89,7 @@ class Resolver:
 
     def visit_while_statement(self, stmt):
         self.resolve(stmt.condition)
-        self.resolve(stmt.body)
+        self.resolve(stmt.statement)
 
     def visit_block_statement(self, stmt):
         self.begin_scope()

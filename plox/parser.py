@@ -2,8 +2,9 @@
 
 from plox.exprs import *
 from plox.stmts import *
+from plox.token import Token
+from plox.types import TokenType
 from plox.error import ParseError
-from plox.token import Token, TokenType
 
 class Parser:
     __current = 0

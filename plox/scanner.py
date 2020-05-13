@@ -1,6 +1,7 @@
 # coding: utf-8
 
-from plox.token import Token, TokenType
+from plox.token import Token
+from plox.types import TokenType
 
 class Scanner:
     __line    = 1

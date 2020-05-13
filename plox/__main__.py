@@ -11,7 +11,7 @@ from plox.scanner import Scanner
 from plox.resolver import Resolver
 from plox.interpreter import Interpreter
 
-signal.signal(signal.SIGINT, lambda *f: exit(0))
+# signal.signal(signal.SIGINT, lambda *f: exit(0))
 
 def get_input():
     braces = 1
@@ -29,7 +29,7 @@ def get_input():
 
 class PLox:
     def __init__(self):
-        self.interpreter = Interpreter(self)
+        self.interpreter = init_functions(Interpreter(self))
         self.error_occured = False
         self.runtime_error_occured = False
 
