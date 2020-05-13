@@ -38,7 +38,8 @@ class Scanner:
             '\r': lambda: None,
             '\t': lambda: None,
 
-            '"' : lambda: self._string(),
+            '"' : lambda: self._string('"'),
+            '\'': lambda: self._string('\''),
             '\n': lambda: self.advance_line(),
             '/' : lambda: self._slash_tokens(),
 
@@ -110,8 +111,8 @@ class Scanner:
         while self.peek() != '\n' and not self.is_at_end():
             self.advance()
 
-    def _string(self):
-        while self.peek() != '"' and not self.is_at_end():
+    def _string(self, quote):
+        while self.peek() != quote and not self.is_at_end():
             if self.peek() == '\n':
                 self.advance_line()
 
