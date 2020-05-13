@@ -1,6 +1,6 @@
 from enum import Enum
 
-FunctionType = (
+FunctionType = Enum(
     'FunctionType',
     '''
         NONE
