@@ -33,6 +33,7 @@ def check_number_operands(operator, *operands):
 class Interpreter:
     def __init__(self, plox):
         self.plox = plox
+        self.locals = {}
         self.globals = Environment()
         self.environment = self.globals
 
@@ -40,16 +41,24 @@ class Interpreter:
         try:
             for statement in statements:
                 self.execute(statement)
+
         except RuntimeError as error:
             self.plox.runtime_error(error)
 
+    def resolve(self, expr, depth):
+        self.locals[expr] = depth
+
+    def look_up_variable(self, name, expr):
+        if (distance := self.locals.get(expr, None)) is not None:
+            return self.environment.get_at(distance, name.lexeme)
+
+        return self.globals.get(name)
+
     def evaluate(self, expr):
-        if expr:
-            return expr.accept(self)
+        if expr: return expr.accept(self)
 
     def execute(self, stmt):
-        if stmt:
-            stmt.accept(self)
+        if stmt: stmt.accept(self)
 
     def execute_block(self, statements, environment):
         previous = self.environment
@@ -82,11 +91,15 @@ class Interpreter:
         return None
 
     def visit_variable(self, expr):
-        return self.environment.get(expr.name)
+        return self.look_up_variable(expr.name, expr)
 
     def visit_assignment(self, expr):
         value = self.evaluate(expr.value)
-        self.environment.assign(expr.name, value)
+
+        if distance := self.locals.get(expr, None):
+            self.environment.assign_at(distance, expr.name. value)
+        else:
+            self.globals.assign(expr.name, value)
 
         return value
 

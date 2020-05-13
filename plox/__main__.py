@@ -4,9 +4,11 @@ import sys
 import signal
 import readline
 
-from plox.parser import Parser
 from plox.native import init_functions
+
+from plox.parser import Parser
 from plox.scanner import Scanner
+from plox.resolver import Resolver
 from plox.interpreter import Interpreter
 
 signal.signal(signal.SIGINT, lambda *f: exit(0))
@@ -27,14 +29,20 @@ def get_input():
 
 class PLox:
     def __init__(self):
-        self.interpreter = init_functions(Interpreter(self))
+        self.interpreter = Interpreter(self)
         self.error_occured = False
         self.runtime_error_occured = False
 
     def run(self, source):
         token_list = Scanner(self, source).scan_tokens()
         statements = Parser(self, token_list).parse()
-        self.interpreter.interpret(statements)
+
+        if not self.error_occured:
+            resolver = Resolver(self, self.interpreter)
+            resolver.resolve(*statements)
+
+        if not self.error_occured:
+            self.interpreter.interpret(statements)
 
     def run_prompt(self):
         while True:
@@ -59,6 +67,10 @@ class PLox:
     def parse_error(self, token, message):
         where = 'at end' if token.type.name == 'EOF' else f"at '{token.lexeme}'"
         self.report(token.line, where, message)
+        self.error_occured = True
+
+    def resolve_error(self, token, message):
+        self.report(token.line, '\b', message)
         self.error_occured = True
 
     def runtime_error(self, error):
