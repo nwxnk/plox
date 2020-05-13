@@ -33,6 +33,13 @@ class Clock(LoxCallable):
     def call(self, interpreter, arguments):
         return time.time()
 
+class Sleep(LoxCallable):
+    def arity(self):
+        return 1
+
+    def call(self, interpreter, arguments):
+        time.sleep(arguments[0])
+
 class Input(LoxCallable):
     def arity(self):
         return 1
@@ -49,6 +56,7 @@ def init_functions(interpreter):
         'pow'  : Pow(),
         'exit' : Exit(),
         'clock': Clock(),
+        'sleep': Sleep(),
         'input': Input()
     }
 
