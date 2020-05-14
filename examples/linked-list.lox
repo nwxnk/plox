@@ -1,0 +1,80 @@
+class Node {
+    init(data) {
+        this.prev = nil;
+        this.next = nil;
+        this.data = data;
+    }
+}
+
+class List {
+    init() {
+        this._len = 0;
+        this.head = nil;
+        this.tail = nil;
+    }
+
+    len() {
+        return this._len;
+    }
+
+    get_item(n) {
+        var i = 0;
+        var node = this.head;
+
+        while (node != nil) {
+            if (i == n)
+                return node.data;
+
+            i = i + 1;
+            node = node.next;
+        }
+    }
+
+    pop() {
+        if (this.tail == nil)
+            return;
+
+        var node  = this.tail;
+        this.tail = node.prev;
+
+        if (this.tail != nil)
+            this.tail.next = nil;
+        else
+            this.head = nil;
+
+        this._len = this._len - 1;
+        return node.data;
+    }
+
+    push(data) {
+        var node = Node(data);
+
+        if (this.head == nil) {
+            this.head = node;
+            this.tail = node;
+        } else {
+            node.prev = this.tail;
+            this.tail.next = node;
+            this.tail = node;
+        }
+
+        this._len = this._len + 1;
+    }
+}
+
+fun main() {
+    var list = List();
+
+    for (var i = 0; i < 10; i = i + 1) {
+        list.push(i);
+    }
+
+    list.pop();
+    list.pop();
+
+    for (var i = 0; i < list._len; i = i + 1) {
+        print list.get_item(i); // i'm sorry
+    }
+}
+
+main();
