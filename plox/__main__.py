@@ -1,17 +1,14 @@
 # coding: utf-8
 
 import sys
-import signal
 import readline
-
-from plox.native import init_functions
 
 from plox.parser import Parser
 from plox.scanner import Scanner
 from plox.resolver import Resolver
 from plox.interpreter import Interpreter
 
-# signal.signal(signal.SIGINT, lambda *f: exit(0))
+from plox.native import init_functions
 
 def get_input():
     braces = 1
@@ -46,9 +43,12 @@ class PLox:
 
     def run_prompt(self):
         while True:
-            self.run(get_input())
-            self.error_occured = False
-            self.runtime_error_occured = False
+            try:
+                self.run(get_input())
+                self.error_occured = False
+                self.runtime_error_occured = False
+            except KeyboardInterrupt:
+                print()
 
     def run_file(self, file_name):
         with open(file_name, 'r') as f:

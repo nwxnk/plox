@@ -1,9 +1,11 @@
 # coding: utf-8
 
+from plox.types import ClassType
 from plox.types import FunctionType
 
 class Resolver:
     __scopes = []
+    __currcl = ClassType.NONE
     __currfn = FunctionType.NONE
 
     def __init__(self, plox, interpreter):
@@ -53,6 +55,12 @@ class Resolver:
 
         self.__currfn = enclosing_fn
 
+    def visit_this(self, expr):
+        if self.__currfn == ClassType.NONE:
+            self.plox.resolve_error(expr.token, 'can not use "this" outside of a class'); return
+
+        self.resolve_local(expr, expr.token)
+
     def visit_literal(self, expr):
         return None
 
@@ -74,6 +82,13 @@ class Resolver:
         self.resolve(expr.left)
         self.resolve(expr.right)
 
+    def visit_get(self, expr):
+        self.resolve(expr.object)
+
+    def visit_set(self, expr):
+        self.resolve(expr.value)
+        self.resolve(expr.object)
+
     def visit_call(self, expr):
         self.resolve(expr.callee)
 
@@ -89,14 +104,20 @@ class Resolver:
     def visit_expression_statement(self, stmt):
         self.resolve(stmt.expression)
 
+    def visit_break_statement(self, stmt):
+        self.resolve_local(stmt, stmt.token)
+
     def visit_print_statement(self, stmt):
         self.resolve(stmt.expression)
 
     def visit_return_statement(self, stmt):
         if self.__currfn == FunctionType.NONE:
-            self.plox.resolve_error(stmt.token, 'can not return from top-level code')
+            self.plox.resolve_error(stmt.token, 'can not return from top-level code'); return
 
-        return self.resolve(stmt.value) if stmt.value else None
+        if stmt.value and self.__currfn == FunctionType.INITIALIZER:
+            self.plox.resolve_error(stmt.token, 'can not return a value from an initializer'); return
+
+        self.resolve(stmt.value)
 
     def visit_while_statement(self, stmt):
         self.resolve(stmt.condition)
@@ -116,6 +137,25 @@ class Resolver:
         self.declare(stmt.name)
         self.define (stmt.name)
         self.resolve_function(stmt, FunctionType.FUNCTION)
+
+    def visit_class_statement(self, stmt):
+        enclosing_cl = self.__currcl
+        self.__currcl = ClassType.CLASS
+
+        self.declare(stmt.name)
+        self.define (stmt.name)
+
+        self.begin_scope()
+        self.__scopes[-1]['this'] = True
+
+        for method in stmt.methods:
+            self.resolve_function(
+                method,
+                FunctionType.INITIALIZER if method.name.lexeme == 'init' else FunctionType.METHOD
+            )
+
+        self.end_scope()
+        self.__currcl = ClassType.NONE
 
     def visit_if_statement(self, stmt):
         self.resolve(stmt.condition)

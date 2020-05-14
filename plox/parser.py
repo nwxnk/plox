@@ -81,6 +81,7 @@ class Parser:
         if self.match(TokenType.PRINT): return self.print_statement()
         if self.match(TokenType.BREAK): return self.break_statement()
         if self.match(TokenType.WHILE): return self.while_statement()
+        if self.match(TokenType.CLASS): return self.class_statement()
         if self.match(TokenType.RETURN): return self.return_statement()
         if self.match(TokenType.CONTINUE): return self.continue_statement()
         if self.match(TokenType.LEFT_BRACE): return self.block_statement()
@@ -97,8 +98,11 @@ class Parser:
             equals = self.previous()
             value  = self.assignment()
 
-            if type(expr) == Variable:
+            if isinstance(expr, Variable):
                 return Assignment(expr.name, value)
+
+            elif isinstance(expr, Get):
+                return Set(expr.object, expr.name, value)
 
             self.error(equals, 'invalid assignment target')
 
@@ -163,9 +167,14 @@ class Parser:
 
         while True:
             if self.match(TokenType.LEFT_PAREN):
-                expr = self.finish_call(expr); continue
+                expr = self.finish_call(expr)
 
-            break
+            elif self.match(TokenType.DOT):
+                name = self.consume(TokenType.IDENTIFIER, "expect property name after '.'")
+                expr = Get(expr, name)
+
+            else:
+                break
 
         return expr
 
@@ -183,7 +192,10 @@ class Parser:
     def primary(self):
         if self.match(TokenType.NIL): return Literal(None)
         if self.match(TokenType.TRUE): return Literal(True)
-        if self.match(TokenType.FALSE): return Literal(False) 
+        if self.match(TokenType.FALSE): return Literal(False)
+
+        if self.match(TokenType.THIS):
+            return This(self.previous())
 
         if self.match(TokenType.IDENTIFIER):
             return Variable(self.previous())
@@ -221,6 +233,17 @@ class Parser:
         self.advance()
 
         return FunctionStatement(name, parameters,  self.block_statement())
+
+    def class_statement(self):
+        name = self.consume(TokenType.IDENTIFIER, 'expect class name')
+        self.consume(TokenType.LEFT_BRACE, 'expect "{" before class body')
+
+        methods = []
+        while (not self.check(TokenType.RIGHT_BRACE)) and (not self.is_at_end()):
+            methods.append(self.function('method'))
+
+        self.consume(TokenType.RIGHT_BRACE, 'expect "}" after class body')
+        return ClassStatement(name, methods)
 
     def for_statement(self):
         self.consume(TokenType.LEFT_PAREN, 'expect "(" after for')

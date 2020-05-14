@@ -24,6 +24,30 @@ class Grouping(Expression):
     def accept(self, visitor):
         return visitor.visit_grouping(self)
 
+class This(Expression):
+    def __init__(self, token):
+        self.token = token
+
+    def accept(self, visitor):
+        return visitor.visit_this(self)
+
+class Get(Expression):
+    def __init__(self, object, name):
+        self.name = name
+        self.object = object
+
+    def accept(self, visitor):
+        return visitor.visit_get(self)
+
+class Set(Expression):
+    def __init__(self, object, name, value):
+        self.name = name
+        self.value = value
+        self.object = object
+
+    def accept(self, visitor):
+        return visitor.visit_set(self)
+
 class Unary(Expression):
     def __init__(self, operator, expression):
         self.operator = operator

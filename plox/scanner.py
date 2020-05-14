@@ -67,7 +67,7 @@ class Scanner:
         if char.isdigit():
             self._number(); return
 
-        elif char.isalpha():
+        elif char.isalpha() or char == '_':
             self._identifier(); return
 
         self.plox.scan_error(self.__line, f'{char} unexpected character')

@@ -1,10 +1,20 @@
 from enum import Enum
 
+ClassType = Enum(
+    'ClassType',
+    '''
+        NONE
+        CLASS
+    '''
+)
+
 FunctionType = Enum(
     'FunctionType',
     '''
         NONE
+        METHOD
         FUNCTION
+        INITIALIZER
     '''
 )
 

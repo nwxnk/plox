@@ -3,14 +3,17 @@
 from numbers import Number
 
 from plox.types import TokenType
-from plox.callable import LoxCallable
-from plox.callable import LoxFunction
 from plox.environment import Environment
 
 from plox.error import (
     ReturnException, BreakException, 
     RuntimeError, ContinueException
 )
+
+from plox.callable import LoxClass
+from plox.callable import LoxInstance
+from plox.callable import LoxCallable
+from plox.callable import LoxFunction
 
 def is_truthy(object):
     return bool(object)
@@ -115,6 +118,28 @@ class Interpreter:
 
         return self.evaluate(expr.right)
 
+    def visit_get(self, expr):
+        object = self.evaluate(expr.object)
+
+        if isinstance(object, LoxInstance):
+            return object.get(expr.name)
+
+        raise RuntimeError(expr.name, 'only instances have properties')
+
+    def visit_set(self, expr):
+        object = self.evaluate(expr.object)
+
+        if not isinstance(object, LoxInstance):
+            raise RuntimeError(expr.name, 'only instances have fields')
+
+        value = self.evaluate(expr.value)
+        object.set(expr.name, value)
+
+        return value
+
+    def visit_this(self, expr):
+        return self.look_up_variable(expr.token, expr)
+
     def visit_call(self, expr):
         function  = self.evaluate(expr.callee)
         arguments = [self.evaluate(arg) for arg in expr.arguments]
@@ -185,6 +210,20 @@ class Interpreter:
 
     def visit_block_statement(self, stmt):
         self.execute_block(stmt.statements, Environment(self.environment))
+
+    def visit_class_statement(self, stmt):
+        self.environment.define(stmt.name.lexeme, None)
+
+        methods = {}
+
+        for method in stmt.methods:
+            methods[method.name.lexeme] = LoxFunction(
+                method,
+                self.environment,
+                method.name.lexeme == 'init'
+            )
+
+        self.environment.assign(stmt.name, LoxClass(stmt.name.lexeme, methods))
 
     def visit_if_statement(self, stmt):
         if is_truthy(self.evaluate(stmt.condition)):
