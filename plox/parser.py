@@ -208,6 +208,11 @@ class Parser:
             self.consume(TokenType.RIGHT_PAREN, 'expected ")" after expression')
             return Grouping(expr)
 
+        if self.match(TokenType.SUPER):
+            token = self.previous()
+            self.consume(TokenType.DOT, 'expect "." after super')
+            return Super(token, self.consume(TokenType.IDENTIFIER, 'expect superclass method name'))
+
         raise self.error(self.peek(), 'expect expression')
 
     def expression_statement(self):
@@ -236,14 +241,21 @@ class Parser:
 
     def class_statement(self):
         name = self.consume(TokenType.IDENTIFIER, 'expect class name')
+        superclass = None
+
+        if self.match(TokenType.LESS):
+            superclass = Variable(self.consume(TokenType.IDENTIFIER, 'expect superclass name'))
+
         self.consume(TokenType.LEFT_BRACE, 'expect "{" before class body')
 
         methods = []
+
         while (not self.check(TokenType.RIGHT_BRACE)) and (not self.is_at_end()):
             methods.append(self.function('method'))
 
         self.consume(TokenType.RIGHT_BRACE, 'expect "}" after class body')
-        return ClassStatement(name, methods)
+
+        return ClassStatement(name, methods, superclass)
 
     def for_statement(self):
         self.consume(TokenType.LEFT_PAREN, 'expect "(" after for')

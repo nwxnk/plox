@@ -81,6 +81,12 @@ class Interpreter:
     def visit_grouping(self, expr):
         return self.evaluate(expr.expression)
 
+    def visit_this(self, expr):
+        return self.look_up_variable(expr.token, expr)
+
+    def visit_variable(self, expr):
+        return self.look_up_variable(expr.name, expr)
+
     def visit_unary(self, expr):
         right = self.evaluate(expr.expression)
 
@@ -92,9 +98,6 @@ class Interpreter:
             return not is_truthy(right)
 
         return None
-
-    def visit_variable(self, expr):
-        return self.look_up_variable(expr.name, expr)
 
     def visit_assignment(self, expr):
         value = self.evaluate(expr.value)
@@ -137,8 +140,17 @@ class Interpreter:
 
         return value
 
-    def visit_this(self, expr):
-        return self.look_up_variable(expr.token, expr)
+    def visit_super(self, expr):
+        distance = self.locals[expr]
+
+        superclass = self.environment.get_at(distance, 'super')
+        object     = self.environment.get_at(distance - 1, 'this')
+        method     = superclass.find_method(expr.method.lexeme)
+
+        if not method:
+            raise RuntimeError(expr.method, f'undefined method "{expr.method.lexeme}"')
+
+        return method.bind(object)
 
     def visit_call(self, expr):
         function  = self.evaluate(expr.callee)
@@ -211,20 +223,6 @@ class Interpreter:
     def visit_block_statement(self, stmt):
         self.execute_block(stmt.statements, Environment(self.environment))
 
-    def visit_class_statement(self, stmt):
-        self.environment.define(stmt.name.lexeme, None)
-
-        methods = {}
-
-        for method in stmt.methods:
-            methods[method.name.lexeme] = LoxFunction(
-                method,
-                self.environment,
-                method.name.lexeme == 'init'
-            )
-
-        self.environment.assign(stmt.name, LoxClass(stmt.name.lexeme, methods))
-
     def visit_if_statement(self, stmt):
         if is_truthy(self.evaluate(stmt.condition)):
             self.execute(stmt.then_branch)
@@ -240,3 +238,29 @@ class Interpreter:
                 break
             except ContinueException:
                 continue
+
+    def visit_class_statement(self, stmt):
+        superclass = None
+
+        self.environment.define(stmt.name.lexeme, None)
+
+        if stmt.superclass:
+            if not isinstance(superclass := self.evaluate(stmt.superclass), LoxClass):
+                raise RuntimeError(stmt.superclass.name, 'superclass must be a class')
+
+            self.environment = Environment(self.environment)
+            self.environment.define('super', superclass)
+
+        methods = {}
+
+        for method in stmt.methods:
+            methods[method.name.lexeme] = LoxFunction(
+                method,
+                self.environment,
+                method.name.lexeme == 'init'
+            )
+
+        if stmt.superclass:
+            self.environment = self.environment.enclosing
+
+        self.environment.assign(stmt.name, LoxClass(stmt.name.lexeme, methods, superclass))

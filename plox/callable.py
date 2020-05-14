@@ -68,15 +68,20 @@ class LoxInstance:
         raise RuntimeError(name, f'undefined property {name.lexeme}')
 
 class LoxClass(LoxCallable):
-    def __init__(self, name, methods):
+    def __init__(self, name, methods, superclass):
         self.name = name
         self.methods = methods
+        self.superclass = superclass
 
     def __str__(self):
         return f'<class "{self.name}">'
 
     def find_method(self, name):
-        return self.methods.get(name, None)
+        if name in self.methods:
+            return self.methods[name]
+
+        if self.superclass:
+            return self.superclass.find_method(name)
 
     def arity(self):
         if (initializer := self.find_method('init')):

@@ -63,9 +63,10 @@ class VarStatement(Statement):
         visitor.visit_var_statement(self)
 
 class ClassStatement(Statement):
-    def __init__(self, name, methods):
+    def __init__(self, name, methods, superclass):
         self.name = name
         self.methods = methods
+        self.superclass = superclass
 
     def accept(self, visitor):
         visitor.visit_class_statement(self)

@@ -31,6 +31,14 @@ class This(Expression):
     def accept(self, visitor):
         return visitor.visit_this(self)
 
+class Super(Expression):
+    def __init__(self, token, method):
+        self.token = token
+        self.method = method
+
+    def accept(self, visitor):
+        return visitor.visit_super(self)
+
 class Get(Expression):
     def __init__(self, object, name):
         self.name = name

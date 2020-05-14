@@ -5,6 +5,7 @@ ClassType = Enum(
     '''
         NONE
         CLASS
+        SUBCLASS
     '''
 )
 
