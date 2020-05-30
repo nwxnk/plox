@@ -73,7 +73,7 @@ class Resolver:
         self.resolve(expr.expression)
 
     def visit_unary(self, expr):
-        self.resolve(expr.right)
+        self.resolve(expr.expression)
 
     def visit_get(self, expr):
         self.resolve(expr.object)
