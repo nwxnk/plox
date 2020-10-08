@@ -75,7 +75,7 @@ class Scanner:
     def scan_tokens(self):
         while not self.is_at_end():
             self.__start = self.__current
-            self._token_dict.get(self.advance(), lambda: self.default_case())()
+            self._token_dict.get(self.advance(), self.default_case)()
 
         return self.tokens + [Token(TokenType.EOF, '', None, self.__line)]
 

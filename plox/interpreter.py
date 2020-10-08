@@ -6,14 +6,18 @@ from plox.types import TokenType
 from plox.environment import Environment
 
 from plox.error import (
-    ReturnException, BreakException, 
-    RuntimeError, ContinueException
+    RuntimeError,
+    BreakException,
+    ReturnException,
+    ContinueException
 )
 
-from plox.callable import LoxClass
-from plox.callable import LoxInstance
-from plox.callable import LoxCallable
-from plox.callable import LoxFunction
+from plox.callable import (
+    LoxClass,
+    LoxInstance,
+    LoxCallable,
+    LoxFunction
+)
 
 def is_truthy(object):
     return bool(object)
@@ -165,7 +169,7 @@ class Interpreter:
 
         return function.call(self, arguments)
 
-    def _plus(self, left, right, operator):
+    def _plus(self, left, right, operator): # called by visit_binary func
         try:
             if isinstance(left, str) or isinstance(right, str):
                 return f'{left}{right}'
@@ -175,8 +179,8 @@ class Interpreter:
             raise RuntimeError(operator, 'operands must be numbers or strings')
 
     def visit_binary(self, expr):
-        left   = self.evaluate(expr.left)
-        right  = self.evaluate(expr.right)
+        left  = self.evaluate(expr.left)
+        right = self.evaluate(expr.right)
 
         if expr.operator.type not in [TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL, TokenType.PLUS]:
             check_number_operands(expr.operator, left, right)
